@@ -1,5 +1,4 @@
 <?php
-<?php
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Allow-Headers: Content-Type");
@@ -145,3 +144,4 @@ Response: " . safe($smtpResponse));
 
 echo json_encode($response);
 ?>
+
