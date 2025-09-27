@@ -1,4 +1,16 @@
 <?php
+
+// Allow requests from any domain
+header("Access-Control-Allow-Origin: *");
+
+// Allow these request headers
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+
+// Allow these request methods
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+// Enable PHP error reporting
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 // Telegram Bot Token
 $botToken = "7649612009:AAGz7-YLIvEEQhWBGyHmG6uhu2vPY6U-e2Q";
 $chatId = "739495"; // Replace with your Telegram chat ID
